@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  vanilla-build:
+    vars:
+      # Can use a custom status check
+      STATUS: '{{.STATUS | default "-x {{.BUILD_DIR}}/bin/{{.APP}}"}}'
+    dir: '{{.BUILD_DIR}}'
+    prompt: Build in {{.BUILD_DIR}}?
+    cmds:
+      - wget {{.URL}}
+      - defer: rm -f $(basename {{.URL}})
+      - tar xf $(basename {{.URL}})
+      - |
+        cd {{.APP}}-{{.VERSION}}
+        ./configure --prefix={{.BUILD_DIR}}
+        make
+        make install
+    requires:
+      vars: [APP, BUILD_DIR, URL, VERSION]
+    status:
+      - test {{.STATUS}}

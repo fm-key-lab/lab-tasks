@@ -4,6 +4,7 @@ includes:
   conda: ./tasks/Conda.yml
   transfer: ./tasks/DataTransfer.yml
   envmodule: ./tasks/EnvironmentModules.yml
+  install: ./tasks/Install.yml
   jupyter: ./tasks/Jupyter.yml
   latex: ./tasks/LaTeX.yml
   smk: ./tasks/Snakemake.yml
