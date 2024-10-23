@@ -1,9 +1,11 @@
 version: '3'
 
 vars:
-  SHELL: bash
+  SHELL:
+    sh: echo $SHELL
 
 tasks:
+  # Next version
   run-inside:
     cmds:
       - |
@@ -11,17 +13,18 @@ tasks:
         module load {{.MODULE}}
         {{.CMDS}}
         module unload {{.MODULE}}'
-    required:
-      vars: [CMDS, MODULE]
     preconditions:
       - task: module-exists
         vars: '{{.MODULE}}'
+    requires:
+      vars: [CMDS, MODULE]
 
+  # Deprecate
   run-in-module:
     silent: true
     cmds:
       - "{{.SHELL}} -c 'module purge; module load {{.MODULE}}; {{.CMDS}}; module unload {{.MODULE}}'"
-    required:
+    requires:
       vars: [CMDS, MODULE]
     preconditions:
       # - sh: test -z $MODULE_BASEDIR
