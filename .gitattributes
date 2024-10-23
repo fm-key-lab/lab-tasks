@@ -1,0 +1,4 @@
+*_tex.template linguist-language=TeX
+*_bib.template linguist-language=BibTeX
+modulefile.template linguist-language=Tcl
+*.yml linguist-detectable=true
