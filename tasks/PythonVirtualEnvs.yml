@@ -1,0 +1,127 @@
+version: '3'
+
+# TODO: Rename to PythonVirtualEnv.yml
+
+vars:
+  GROUP_VENVS: $GROUP_HOME/envs/venv
+  PYTHON_MODULE: python-waterboa/2024.06
+  UV_MODULE: uv/0.2.34
+
+includes:
+  env-modules: ./EnvironmentModules.yml
+
+tasks:
+  create:
+    desc: Create virtual environment with uv
+    summary: |
+      Create virtual environment with uv
+
+      Usage
+      -----
+      $ task venv:create PREFIX=/path/to/env INSTALL="-r requirements.txt"
+    vars:
+      EXTRA_MODULES: '{{.EXTRA_MODULES | default ""}}'
+      PYTHON: '{{.PYTHON | default "$GROUP_HOME/opt/python/python/bin/python3.12"}}'
+    prompt: Create environment {{.PREFIX}}?
+    cmds:
+      - mkdir -p {{.PREFIX}}
+      - task: env-modules:run-inside
+        vars:
+          CMDS: 'cd {{.PREFIX}} && uv venv --python={{.PYTHON}} && source .venv/bin/activate && uv pip install {{.INSTALL}} && deactivate'
+          MODULE: '{{.UV_MODULE}} {{.EXTRA_MODULES}}'
+    requires:
+      vars: [PREFIX, INSTALL]
+    status:
+      - test -f {{.PREFIX}}/.venv/bin/activate
+
+  create-venv:
+  # TODO: Graceful exits when errors
+  # TODO: Use `uv init` instead with a config
+    dir: '{{.GROUP_VENVS}}/{{.NAME}}'
+    prompt: Create environment {{.GROUP_VENVS}}/{{.NAME}}?
+    cmds:
+      - task: env-modules:run-in-module
+        vars:
+          CMDS: 'cd {{.GROUP_VENVS}}/{{.NAME}} && uv venv --python={{.PYTHON}} && source .venv/bin/activate && uv pip install {{.PIP_INSTALL}} && deactivate'
+          MODULE: '{{.UV_MODULE}}'
+    vars:
+      PYTHON: '{{.PYTHON | default "$GROUP_HOME/opt/python/python/bin/python3.12"}}'
+    requires:
+      vars: [NAME, PIP_INSTALL]
+    status:
+      - test -f {{.GROUP_VENVS}}/{{.NAME}}/.venv/bin/activate
+
+  create-venv-modulefile:
+    dir: $GROUP_HOME/Modules/modulefiles/{{.NAME}}
+    cmds:
+      - task: env-modules:run-in-module
+        vars:
+          CMDS: 'python {{.ROOT_DIR}}/tasks/scripts/write_modulefile.py --NAME {{.NAME}} --VERSION {{.VERSION}} --template venv'
+          MODULE: '{{.PYTHON_MODULE}}'
+    vars:
+      DEFAULT_VERSION: 0.0.1-alpha
+      VERSION: '{{.DEFAULT_VERSION}}'
+    status:
+      - test -f $GROUP_HOME/Modules/modulefiles/{{.NAME}}/{{.VERSION}}
+    requires:
+      vars: [NAME]
+
+  add_jupyter_kernel:
+    dir: '{{.GROUP_VENVS}}/{{.NAME}}'
+    cmds:
+      - task: run-inside
+        vars:
+          CMDS: 'python -m ipykernel install --user --name group-venv-{{.NAME}} --display-name "Python ({{.NAME}}), group venvs"'
+          PREFIX: '{{.GROUP_VENVS}}/{{.NAME}}'
+    status:
+      - test -d $HOME/.local/share/jupyter/kernels/group-venv-{{.NAME}}
+    requires:
+      vars: [NAME]
+  
+  run-inside:
+    dir: '{{.PREFIX}}'
+    cmds:
+      - bash -c 'source .venv/bin/activate; {{.CMDS}}; deactivate'
+    required:
+      vars: [CMDS, PREFIX]
+
+  sandbox_venv:
+    vars:
+      NAME: sandbox
+      PYTHON_VERSION: 3.12
+    cmds:
+      - task: create-venv
+        vars:
+          NAME: '{{.NAME}}'
+          PYTHON: $GROUP_HOME/opt/python/python/bin/python{{.PYTHON_VERSION}}
+          PIP_INSTALL: -r '{{.ROOT_DIR}}/tasks/envs/sandbox-requirements.txt'
+      - task: create-venv-modulefile
+        vars:
+          NAME: '{{.NAME}}'
+      - task: add_jupyter_kernel
+        vars:
+          NAME: '{{.NAME}}'
+
+  python_packaging_venv:
+    vars:
+      NAME: python_packaging
+      PYTHON_VERSION: 3.12
+    cmds:
+      - task: create-venv
+        vars:
+          NAME: '{{.NAME}}'
+          PYTHON: $GROUP_HOME/opt/python/python/bin/python{{.PYTHON_VERSION}}
+          PIP_INSTALL: -r '{{.ROOT_DIR}}/tasks/envs/{{.NAME}}-requirements.txt'
+      - task: create-venv-modulefile
+        vars:
+          NAME: '{{.NAME}}'
+
+  # uv pip install numpy scipy pandas loguru requests ghostscript matplotlib ipykernel ipython ipywidgets jupyter jupyter_server==2.12.5 jupyterlab seaborn
+  toytree-env:
+    dir: $HOME/dev/envs
+    cmds:
+      # - git clone https://github.com/eaton-lab/toytree.git
+      - task: env-modules:run-in-module
+        vars:
+          CMDS: 'cd $HOME/dev/envs/toytree && conda install toytree -c conda-forge --only-deps && pip install -e . --no-deps'
+          MODULE: 'anaconda/3/2023.03'

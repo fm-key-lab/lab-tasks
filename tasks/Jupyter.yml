@@ -1,0 +1,39 @@
+version: '3'
+
+includes:
+  conda: ./Conda.yml
+  venv: ./PythonVirtualEnvs.yml
+
+tasks:
+  add-kernel:
+    cmds:
+      - bash -c 'python -m ipykernel install --user --name {{.NAME}} --display-name "Python ({{.NAME}})"'
+    status:
+      - test -d ~/.local/share/jupyter/kernels/{{.NAME}}
+    requires:
+      vars: [NAME]
+
+  run-inside:
+    dir: '{{.PREFIX}}'
+    cmds:
+      - bash -c 'source .venv/bin/activate; {{.CMDS}}; deactivate'
+    required:
+      vars: [CMDS, PREFIX]
+
+  add-kernel-to-venv:
+    cmds:
+      - task: venv:run-inside
+        vars:
+          CMDS: python -m ipykernel install --user --name {{.NAME}} --display-name "Python ({{.NAME}})"
+          PREFIX: '{{.PREFIX}}'
+    status:
+      - test -d ~/.local/share/jupyter/kernels/{{.NAME}}
+    requires:
+      vars: [PREFIX]
+    vars:
+      NAME:
+        sh: echo "$(basename ${{.PREFIX}})"
+
+  add-kernel-to-conda-env:
+    cmds:
+      - task: add-kernel

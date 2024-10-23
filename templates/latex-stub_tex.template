@@ -1,0 +1,49 @@
+\documentclass{article}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{csquotes}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage[colorlinks]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref} % Load after hyperref
+\usepackage{listings}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{parskip}
+\usepackage{xcolor}
+
+\bibliographystyle{unsrtnat}
+\newcommand{\addendum}[1]{\par \textbf{#1}}
+
+\geometry{margin=2cm}
+
+\definecolor{cite-color}{RGB}{206,34,120} % magenta
+\definecolor{link-color}{RGB}{28,172,184} % turquoise (darker)
+\definecolor{file-color}{RGB}{124,195,3} % lime green (darker)
+\definecolor{url-color}{RGB}{102,35,175} % purple
+
+\AtBeginDocument{
+	\hypersetup{
+	    citecolor=link-color,
+	    linkcolor=cite-color,
+	    filecolor=file-color,
+	    urlcolor=url-color
+	}
+ }
+
+\title{$TITLE}
+
+\author{$AUTHOR}
+
+\begin{document}
+
+\maketitle
+
+\medskip
+
+\bibliography{refs}
+
+\end{document}

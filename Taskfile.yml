@@ -1,0 +1,10 @@
+version: '3'
+
+includes:
+  conda: ./tasks/Conda.yml
+  transfer: ./tasks/DataTransfer.yml
+  envmodule: ./tasks/EnvironmentModules.yml
+  jupyter: ./tasks/Jupyter.yml
+  latex: ./tasks/LaTeX.yml
+  smk: ./tasks/Snakemake.yml
+  venv: ./tasks/PythonVirtualEnvs.yml

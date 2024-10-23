@@ -1,0 +1,28 @@
+version: 3
+
+tasks:
+  create_stub:
+    desc: Create LaTeX document stub.
+    summary: |
+      Create LaTeX document stub.
+
+      Usage:
+      ------
+      $ module load task
+      $ task -t $GROUP_HOME/tools/lab-tasks \
+          latex:create_stub \
+          AUTHOR=thomas \
+          TITLE='Multiply Mutated Genes' \
+          OUTPUT_DIR=$HOME/dev/projects/multiply_mutated_genes/docs/summary
+    vars:
+      PYTHON_MODULE: python-waterboa/2024.06
+    cmds:
+      - bash -c '
+        module load {{.PYTHON_MODULE}} &&
+        python {{.USER_WORKING_DIR}}/scripts/write_latex_stub.py '{{.OUTPUT_DIR}}' --AUTHOR '{{.AUTHOR}}' --TITLE "{{.TITLE}}" &&
+        module unload {{.PYTHON_MODULE}}'
+    status:
+      - test -f {{.OUTPUT_DIR}}/main.tex
+      - test -f {{.OUTPUT_DIR}}/refs.bib
+    requires:
+      vars: [AUTHOR, OUTPUT_DIR, TITLE]

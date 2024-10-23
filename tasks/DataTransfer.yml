@@ -1,0 +1,131 @@
+version: '3'
+
+vars:
+  RCLONE_MODULE: rclone/1.67.0
+  RCLONE_CONFIG_NAME: nextcloud
+
+includes:
+  envmodule: ./EnvironmentModules.yml
+
+tasks:
+  copy-*-*-nextcloud:
+    desc: Local/Remote <-> Nextcloud
+    vars:
+      TYPE: '{{index .MATCH 0}}'
+      DIRECTION: '{{index .MATCH 1}}'
+      EXTRA: '{{.EXTRA | default "--progress"}}'
+    cmds:
+      - task: nextcloud-prepare-{{.TYPE}}-{{.DIRECTION}}
+        vars:
+          DESTPATH: '{{.DESTPATH}}'
+          EXTRA: '{{.EXTRA}}'
+      - task: nextcloud-copy-{{.TYPE}}-{{.DIRECTION}}
+        vars:
+          DESTPATH: '{{.DESTPATH}}'
+          SOURCEPATH: '{{.SOURCEPATH}}'
+          EXTRA: '{{.EXTRA}}'
+    requires:
+      vars: [DESTPATH, SOURCEPATH]
+
+  nextcloud-prepare-file-to:
+
+  nextcloud-prepare-file-from:
+
+  nextcloud-prepare-contents-to:
+
+  nextcloud-prepare-contents-from:
+
+  nextcloud-prepare-directory-to:
+    cmds:
+      - echo 'rclone mkdir "{{.RCLONE_CONFIG_NAME}}:{{.DESTPATH}}" {{.EXTRA}}'
+    requires:
+      vars: [DESTPATH]
+
+  nextcloud-prepare-directory-from: echo 'mkdir -p "{{.DESTPATH}}"'
+
+  nextcloud-copy-file-to:
+    vars:
+      # NOTE: Keep name the same. I don't think this is required for newer versions of rclone.
+      FN:
+        sh: basename {{.SOURCEPATH}}
+    cmds:
+      - task: rclone-copyto
+        vars:
+          SRC: '{{.SOURCEPATH}}'
+          DST: '{{.RCLONE_CONFIG_NAME}}:{{.DESTPATH}}/{{.FN}}'
+          EXTRA: '{{.EXTRA}}'
+  
+  nextcloud-copy-file-from:
+    vars:
+      # NOTE: Keep name the same. I don't think this is required for newer versions of rclone.
+      FN:
+        sh: basename {{.SOURCEPATH}}
+    cmds:
+      - task: rclone-copyto
+        vars:
+          SRC: '{{.RCLONE_CONFIG_NAME}}:{{.SOURCEPATH}}'
+          DST: '{{.DESTPATH}}/{{.FN}}'
+          EXTRA: '{{.EXTRA}}'
+
+  nextcloud-copy-contents-to:
+    cmds:
+      - task: rclone-copy
+        vars:
+          SRC: '{{.SOURCEPATH}}'
+          DST: '{{.RCLONE_CONFIG_NAME}}:{{.DESTPATH}}'
+          EXTRA: '{{.EXTRA}}'
+
+  nextcloud-copy-contents-from:
+    cmds:
+      - task: rclone-copy
+        vars:
+          SRC: '{{.RCLONE_CONFIG_NAME}}:{{.SOURCEPATH}}'
+          DST: '{{.DESTPATH}}'
+          EXTRA: '{{.EXTRA}}'
+
+  nextcloud-copy-directory-to:
+    cmds:
+      - task: rclone-copy
+        vars:
+          SRC: '{{.SOURCEPATH}}'
+          DST: '{{.RCLONE_CONFIG_NAME}}:{{.DESTPATH}}'
+          EXTRA: '{{.EXTRA}}'
+
+  nextcloud-copy-directory-from:
+    cmds:
+      - task: rclone-copy
+        vars:
+          SRC: '{{.RCLONE_CONFIG_NAME}}:{{.SOURCEPATH}}'
+          DST: '{{.DESTPATH}}'
+          EXTRA: '{{.EXTRA}}'
+
+  rclone:
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: rclone {{.RCLONE_CMD}} "{{.SRC}}" "{{.DST}}" {{.EXTRA}}
+          MODULE: '{{.RCLONE_MODULE}}'
+    requires:
+      vars: [RCLONE_CMD, RCLONE_MODULE, SRC, DST, EXTRA]
+
+  rclone-copyto:
+    cmds:
+      - task: rclone
+        vars:
+          RCLONE_CMD: copyto
+          SRC: '{{.SRC}}'
+          DST: '{{.DST}}'
+          EXTRA: '{{.EXTRA}}'
+    requires:
+      vars: [SRC, DST, EXTRA]
+
+  rclone-copy:
+    cmds:
+      - task: rclone
+        vars:
+          RCLONE_CMD: copyto
+          SRC: '{{.SRC}}'
+          DST: '{{.DST}}'
+          EXTRA: '{{.EXTRA}}'
+    requires:
+      vars: [SRC, DST, EXTRA]

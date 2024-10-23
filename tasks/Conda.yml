@@ -1,0 +1,35 @@
+version: '3'
+
+vars:
+  CONDA_MODULE: anaconda/3/2023.03
+
+includes:
+  env-modules: ./EnvironmentModules.yml
+
+tasks:
+  create-env:
+    desc: Create a conda env.
+    summary: | 
+      Create a conda env.
+
+      Usage:
+      ------
+      $ module load task
+      $ task -t $GROUP_HOME/tools/lab-tasks conda:create-env
+    cmds:
+      - task: env-modules:run-in-module
+        vars:
+          CMDS: 'conda create {{.NAME}} {{.INSTALL}} -y'
+          MODULE: '{{.CONDA_MODULE}}'
+    requires:
+      vars: [NAME, INSTALL]
+
+  run-in-conda-env:
+    silent: true
+    cmds:
+      - task: env-modules:run-in-module
+        vars:
+          CMDS: 'source activate {{.PREFIX}} --stack && {{.CMDS}} && conda deactivate'
+          MODULE: '{{.CONDA_MODULE}}'
+    requires:
+      vars: [CMDS, PREFIX]

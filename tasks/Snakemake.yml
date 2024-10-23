@@ -1,0 +1,70 @@
+version: 3
+
+vars:
+  APPTAINER_MODULE: apptainer/1.3.2
+  SNAKEMAKE_MODULE: snakemake/8.16.0
+  
+  PTMP:
+    sh: echo "/ptmp/$USER"
+
+includes:
+  env-modules: ./EnvironmentModules.yml
+
+tasks:
+  run:
+    desc: Run a snakemake pipeline on the cluster.
+    summary: |
+      Run a snakemake pipeline on the cluster.
+
+      Task that starts a snakemake pipeline run and enforces best practices, 
+      including version control, filesystem usage recommendations, and
+      environment modules.
+
+      Usage:
+      ------
+      $ module load task
+      $ task -t $GROUP_HOME/tools/lab-tasks \
+        smk:run \
+        PROJ="sequencing-comparison-aviti-illumina" \
+        BRANCH="cmt-support" \
+        EXTRA=" -n"
+    dir: '{{.PTMP}}'
+    silent: true
+    cmds:
+      - task: update-repo
+        vars:
+          BRANCH: '{{.BRANCH}}'
+          REPO: '{{.PROJ}}'
+      - task: env-modules:run-in-module
+        vars:
+          CMDS: 'export OMP_PLACES=$OMP_PLACES; cd "{{.PTMP}}/{{.PROJ}}"; snakemake --workflow-profile {{.PROFILE}} {{.EXTRA}}'
+          MODULE: '{{.APPTAINER_MODULE}} {{.SNAKEMAKE_MODULE}}'
+    env:
+      OMP_PLACES: threads # Assumes CPUs placed on threads
+    vars:
+      BRANCH: '{{.BRANCH | default "main"}}'
+      EXTRA: '{{.EXTRA | default ""}}'
+      PROFILE: '{{.PROFILE | default "profiles"}}'
+    requires:
+      vars: [PROJ]
+
+  update-repo:
+    dir: '{{.PTMP}}'
+    internal: true
+    silent: true
+    cmds:
+      - |
+        if [ -d "{{.REPO}}" ]; then
+          cd "{{.REPO}}"
+          echo "Project appears to be in-progress. Pulling from {{.REPO_SSH}} (branch: {{.BRANCH}})"
+          git pull origin "{{.BRANCH}}"
+        else
+          echo "No in-progress directory found. Cloning from {{.REPO_SSH}} (branch: {{.BRANCH}})"
+          git clone --branch "{{.BRANCH}}" "{{.REPO_SSH}}"
+        fi
+    vars:
+      GIT_USER_NAME:
+        sh: git config --get user.name
+      REPO_SSH: git@github.com:{{.GIT_USER_NAME}}/{{.REPO}}.git
+    requires:
+      vars: [REPO, BRANCH]

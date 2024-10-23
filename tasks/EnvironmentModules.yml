@@ -1,0 +1,34 @@
+version: '3'
+
+vars:
+  SHELL: bash
+
+tasks:
+  run-inside:
+    cmds:
+      - |
+        {{.SHELL}} -c 'module purge
+        module load {{.MODULE}}
+        {{.CMDS}}
+        module unload {{.MODULE}}'
+    required:
+      vars: [CMDS, MODULE]
+    preconditions:
+      - task: module-exists
+        vars: '{{.MODULE}}'
+
+  run-in-module:
+    silent: true
+    cmds:
+      - "{{.SHELL}} -c 'module purge; module load {{.MODULE}}; {{.CMDS}}; module unload {{.MODULE}}'"
+    required:
+      vars: [CMDS, MODULE]
+    preconditions:
+      # - sh: test -z $MODULE_BASEDIR
+      - task: module-exists
+        vars: '{{.MODULE}}'
+
+  module-exists:
+    run: once
+    status:
+      - module avail {{.MODULE}} | wc -l
