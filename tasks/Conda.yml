@@ -4,7 +4,7 @@ vars:
   CONDA_MODULE: anaconda/3/2023.03
 
 includes:
-  env-modules: ./EnvironmentModules.yml
+  envmodule: ./EnvironmentModules.yml
 
 tasks:
   create-env:
@@ -17,7 +17,7 @@ tasks:
       $ module load task
       $ task -t $GROUP_HOME/tools/lab-tasks conda:create-env
     cmds:
-      - task: env-modules:run-in-module
+      - task: envmodule:run-inside
         vars:
           CMDS: 'conda create {{.NAME}} {{.INSTALL}} -y'
           MODULE: '{{.CONDA_MODULE}}'
@@ -27,7 +27,7 @@ tasks:
   run-in-conda-env:
     silent: true
     cmds:
-      - task: env-modules:run-in-module
+      - task: envmodule:run-inside
         vars:
           CMDS: 'source activate {{.PREFIX}} --stack && {{.CMDS}} && conda deactivate'
           MODULE: '{{.CONDA_MODULE}}'
