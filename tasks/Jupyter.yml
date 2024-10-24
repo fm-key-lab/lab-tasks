@@ -21,18 +21,18 @@ tasks:
       vars: [CMDS, PREFIX]
 
   add-kernel-to-venv:
+    vars:
+      NAME:
+        sh: echo "$(basename ${{.PREFIX}})"
     cmds:
       - task: venv:run-inside
         vars:
           CMDS: python -m ipykernel install --user --name {{.NAME}} --display-name "Python ({{.NAME}})"
           PREFIX: '{{.PREFIX}}'
-    status:
-      - test -d ~/.local/share/jupyter/kernels/{{.NAME}}
     requires:
       vars: [PREFIX]
-    vars:
-      NAME:
-        sh: echo "$(basename ${{.PREFIX}})"
+    status:
+      - test -d ~/.local/share/jupyter/kernels/{{.NAME}}
 
   add-kernel-to-conda-env:
     cmds:

@@ -1,7 +1,5 @@
 version: '3'
 
-# TODO: Rename to PythonVirtualEnv.yml
-
 vars:
   GROUP_VENVS: $GROUP_HOME/envs/venv
   PYTHON_MODULE: python-waterboa/2024.06
