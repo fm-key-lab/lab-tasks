@@ -1,6 +1,7 @@
 version: '3'
 
 includes:
+  compress: ./tasks/Compression.yml
   conda: ./tasks/Conda.yml
   transfer: ./tasks/DataTransfer.yml
   envmodule: ./tasks/EnvironmentModules.yml
