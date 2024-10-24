@@ -1,14 +1,15 @@
 version: '3'
 
 vars:
-  GROUP_VENVS: $GROUP_HOME/envs/venv
+  GROUP_VENVS: '{{.GROUP_HOME}}/envs/venv'
   PYTHON_MODULE: python-waterboa/2024.06
-  UV_MODULE: uv/0.2.34
+  UV_MODULE: uv
 
 includes:
-  env-modules: ./EnvironmentModules.yml
+  envmodule: ./EnvironmentModules.yml
 
 tasks:
+  # deprecate?
   create:
     desc: Create virtual environment with uv
     summary: |
@@ -19,11 +20,12 @@ tasks:
       $ task venv:create PREFIX=/path/to/env INSTALL="-r requirements.txt"
     vars:
       EXTRA_MODULES: '{{.EXTRA_MODULES | default ""}}'
+      # TODO: More sensible default (maybe "" for system)
       PYTHON: '{{.PYTHON | default "$GROUP_HOME/opt/python/python/bin/python3.12"}}'
     prompt: Create environment {{.PREFIX}}?
     cmds:
       - mkdir -p {{.PREFIX}}
-      - task: env-modules:run-inside
+      - task: envmodule:run-inside
         vars:
           CMDS: 'cd {{.PREFIX}} && uv venv --python={{.PYTHON}} && source .venv/bin/activate && uv pip install {{.INSTALL}} && deactivate'
           MODULE: '{{.UV_MODULE}} {{.EXTRA_MODULES}}'
@@ -32,13 +34,14 @@ tasks:
     status:
       - test -f {{.PREFIX}}/.venv/bin/activate
 
+  # deprecate?
   create-venv:
   # TODO: Graceful exits when errors
   # TODO: Use `uv init` instead with a config
     dir: '{{.GROUP_VENVS}}/{{.NAME}}'
     prompt: Create environment {{.GROUP_VENVS}}/{{.NAME}}?
     cmds:
-      - task: env-modules:run-in-module
+      - task: envmodule:run-in-module
         vars:
           CMDS: 'cd {{.GROUP_VENVS}}/{{.NAME}} && uv venv --python={{.PYTHON}} && source .venv/bin/activate && uv pip install {{.PIP_INSTALL}} && deactivate'
           MODULE: '{{.UV_MODULE}}'
@@ -52,7 +55,7 @@ tasks:
   create-venv-modulefile:
     dir: $GROUP_HOME/Modules/modulefiles/{{.NAME}}
     cmds:
-      - task: env-modules:run-in-module
+      - task: envmodule:run-in-module
         vars:
           CMDS: 'python {{.ROOT_DIR}}/tasks/scripts/write_modulefile.py --NAME {{.NAME}} --VERSION {{.VERSION}} --template venv'
           MODULE: '{{.PYTHON_MODULE}}'
