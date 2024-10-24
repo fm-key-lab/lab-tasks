@@ -27,7 +27,12 @@ tasks:
       - mkdir -p {{.PREFIX}}
       - task: envmodule:run-inside
         vars:
-          CMDS: 'cd {{.PREFIX}} && uv venv --python={{.PYTHON}} && source .venv/bin/activate && uv pip install {{.INSTALL}} && deactivate'
+          CMDS: | 
+            cd {{.PREFIX}} && 
+            uv venv --python={{.PYTHON}} && 
+            source .venv/bin/activate && 
+            uv pip install {{.INSTALL}} && 
+            deactivate
           MODULE: '{{.UV_MODULE}} {{.EXTRA_MODULES}}'
     requires:
       vars: [PREFIX, INSTALL]
