@@ -27,8 +27,7 @@ tasks:
   check-package-installed:
     silent: true
     cmds:
-      - {{.RPM}} -qa | grep -q {{.PACKAGE}} || { echo "{{.PACKAGE}} is not installed."; exit 1; }
-      - echo "{{.PACKAGE}} is installed."
+      - /usr/bin/rpm -qa | grep -q {{.PACKAGE}} || { echo "{{.PACKAGE}} is not installed."; exit 1; }
     requires:
       vars: [PACKAGE]
 
