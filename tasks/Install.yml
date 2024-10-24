@@ -1,5 +1,8 @@
 version: '3'
 
+vars:
+  RPM: /usr/bin/rpm
+
 tasks:
   vanilla-build:
     vars:
@@ -20,3 +23,12 @@ tasks:
       vars: [APP, BUILD_DIR, URL, VERSION]
     status:
       - test {{.STATUS}}
+
+  check-package-installed:
+    silent: true
+    cmds:
+      - {{.RPM}} -qa | grep -q {{.PACKAGE}} || { echo "{{.PACKAGE}} is not installed."; exit 1; }
+      - echo "{{.PACKAGE}} is installed."
+    requires:
+      vars: [PACKAGE]
+
