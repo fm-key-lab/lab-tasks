@@ -8,6 +8,22 @@ includes:
   envmodule: ./EnvironmentModules.yml
 
 tasks:
+  default:
+
+  # Misc
+
+  r-to-ptmp:
+    vars:
+      DEST: '/ptmp/$USER/{{.DIR}}'
+      SRC: '/r/${USER:0:1}/$USER/{{.DIR}}'
+    cmds:
+      - mkdir -p {{.DEST}}
+      - rsync --ignore-existing -av --progress {{.SRC}}/ {{.DEST}}/
+    requires:
+      vars: [DIR]
+
+  # Nextcloud
+
   copy-*-*-nextcloud:
     desc: Local/Remote <-> Nextcloud
     vars:
