@@ -1,0 +1,72 @@
+version: '3'
+
+tasks:
+  default:
+    - task: vanilla-interactive
+
+  vanilla-interactive:
+    desc: Interactive Slurm job with vanilla resources.
+    summary: | 
+      Interactive Slurm job with vanilla resources.
+
+      Alias for
+
+        srun --pty --partition=interactive --mem=16G --time=1:58:59 --nodes=1 --cpus-per-task=8 bash
+    cmds:
+      - task: srun-bash
+        vars:
+          PARTITION: interactive
+          EXTRA:  --nodes=1 --cpus-per-task=8
+      - echo "$SLURM_CPUS_PER_TASK CPUs per task"
+
+  interactive-large:
+    desc: Interactive Slurm job with vanilla resources.
+    summary: | 
+      Interactive Slurm job with vanilla resources.
+
+      Alias for
+
+        srun --pty --partition=interactive --mem=16G --time=1:58:59 --cpus-per-task=32 bash
+    cmds:
+      - task: srun-bash
+        vars:
+          EXTRA: --cpus-per-task=32
+          MEM: 120G
+          PARTITION: interactive
+      - echo "$SLURM_CPUS_PER_TASK CPUs per task"
+  
+  datatransfer:
+    desc: Interactive Slurm job with internet.
+    summary: | 
+      Interactive Slurm job with internet.
+
+      Alias for
+
+        srun --pty --partition=datatransfer --mem=16G --time=1:58:59 bash
+    cmds:
+      - task: srun-bash
+        vars:
+          PARTITION: datatransfer
+
+  datatransfer-long:
+    desc: Interactive Slurm job with internet, long-running.
+    summary: | 
+      Interactive Slurm job with internet, long-running.
+
+      Alias for
+
+        srun --pty --partition=datatransfer --mem=16G --time=12:00:00 bash
+    cmds:
+      - task: srun-bash
+        vars:
+          PARTITION: datatransfer
+          TIME: 12:00:00
+
+  srun-bash:
+    vars:
+      EXTRA: '{{.EXTRA | default ""}}'
+      MEM: '{{.MEM | default "16G"}}'
+      PARTITION: '{{.PARTITION | default "small,general"}}'
+      TIME: '{{.TIME | default "1:58:59"}}'
+    cmds:
+      - srun --pty --partition={{.PARTITION}} --mem={{.MEM}} --time={{.TIME}} --cpus-per-task=8 {{.EXTRA}} bash

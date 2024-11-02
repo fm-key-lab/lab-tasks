@@ -8,5 +8,6 @@ includes:
   install: ./tasks/Install.yml
   jupyter: ./tasks/Jupyter.yml
   latex: ./tasks/LaTeX.yml
+  slurm: ./tasks/Slurm.yml
   smk: ./tasks/Snakemake.yml
   venv: ./tasks/PythonVirtualEnvs.yml
