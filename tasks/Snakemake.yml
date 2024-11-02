@@ -11,6 +11,18 @@ includes:
   env-modules: ./EnvironmentModules.yml
 
 tasks:
+  default:
+    vars:
+      BRANCH: '{{.BRANCH | default "main"}}'
+      EXTRA: '{{.EXTRA | default ""}}'
+      PROFILE: '{{.PROFILE | default "profiles"}}'
+    cmds:
+      - task: run
+        vars:
+          BRANCH: '{{.BRANCH}}'
+          EXTRA: '{{.EXTRA}}'
+          PROFILE: '{{.PROFILE}}'
+
   run:
     desc: Run a snakemake pipeline on the cluster.
     summary: |
@@ -28,6 +40,10 @@ tasks:
         PROJ="sequencing-comparison-aviti-illumina" \
         BRANCH="cmt-support" \
         EXTRA=" -n"
+    vars:
+      BRANCH: '{{.BRANCH | default "main"}}'
+      EXTRA: '{{.EXTRA | default ""}}'
+      PROFILE: '{{.PROFILE | default "profiles"}}'
     dir: '{{.PTMP}}'
     silent: true
     cmds:
@@ -41,10 +57,6 @@ tasks:
           MODULE: '{{.APPTAINER_MODULE}} {{.SNAKEMAKE_MODULE}}'
     env:
       OMP_PLACES: threads # Assumes CPUs placed on threads
-    vars:
-      BRANCH: '{{.BRANCH | default "main"}}'
-      EXTRA: '{{.EXTRA | default ""}}'
-      PROFILE: '{{.PROFILE | default "profiles"}}'
     requires:
       vars: [PROJ]
 
