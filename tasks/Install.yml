@@ -31,3 +31,9 @@ tasks:
     requires:
       vars: [PACKAGE]
 
+  # Adapted from soedinglab/MMseqs2/wiki#check-system-requirements-under-linux
+  check-system-requirements: |
+    [ $(uname -m) = "x86_64" ] && echo "64bit: Yes" || echo "64bit: No"
+    grep -q avx2 /proc/cpuinfo && echo "AVX2: Yes" || echo "AVX2: No"
+    grep -q sse4_1 /proc/cpuinfo && echo "SSE4.1: Yes" || echo "SSE4.1: No"
+    grep -q sse2 /proc/cpuinfo && echo "SSE2: Yes" || echo "SSE2: No"
