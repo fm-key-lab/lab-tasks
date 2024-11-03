@@ -24,13 +24,14 @@ tasks:
     status:
       - test -f ./{{.IMAGE_NAME}}.sif
 
+  # NOTE: Cannot use stdout; will exit on errors if FATAL in stdout
   run-inside:
     vars:
       EXTRA: '{{.EXTRA | default ""}}'
     cmds:
       - task: envmodule:run-inside
         vars:
-          CMDS: apptainer --quiet exec {{.EXTRA}} {{.IMAGE}} {{.CMDS}}
+          CMDS: apptainer --quiet exec {{.EXTRA}} {{.IMAGE}} {{.CMDS}} 2>&1 | grep "FATAL" && exit 1
           MODULE: '{{.APPTAINER_MODULE}}'
     requires:
       vars: [CMDS, IMAGE]
