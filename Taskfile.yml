@@ -1,8 +1,15 @@
 version: '3'
 
+vars:
+  GROUP_BIN: '{{.GROUP_HOME}}/bin'
+  GROUP_CONTAINERS: '{{.GROUP_HOME}}/containers'
+  GROUP_MODULEFILES: '{{.GROUP_HOME}}/Modules/modulefiles'
+  OPT_DIR: '{{.GROUP_HOME}}/opt'
+
 includes:
   compress: ./tasks/Compression.yml
   conda: ./tasks/Conda.yml
+  containers: ./tasks/Containers.yml
   transfer: ./tasks/DataTransfer.yml
   envmodule: ./tasks/EnvironmentModules.yml
   install: ./tasks/Install.yml

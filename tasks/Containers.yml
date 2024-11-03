@@ -1,0 +1,35 @@
+version: '3'
+
+vars:
+  APPTAINER_MODULE: apptainer/1.3.2
+
+includes:
+  envmodule: ./EnvironmentModules.yml
+
+tasks:
+  create-apptainer:
+    vars:
+      DIR: '{{.DIR | default .GROUP_CONTAINERS}}'
+      EXTRA: '{{.EXTRA | default "--notest"}}'
+    dir: '{{.DIR}}'
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: apptainer build {{.EXTRA}} {{.DIR}}/{{.IMAGE_NAME}}.sif {{.DEFINITION_FILE}}
+          MODULE: '{{.APPTAINER_MODULE}}'
+    requires:
+      vars: [APPTAINER_MODULE, DEFINITION_FILE, GROUP_CONTAINERS, IMAGE_NAME]
+    generates:
+      - ./{{.IMAGE_NAME}}.sif
+    status:
+      - test -f ./{{.IMAGE_NAME}}.sif
+
+  create-apptainer-from-dockerhub:
+    cmds:
+      - task: create-apptainer
+        vars:
+          DEFINITION_FILE: 'docker://{{.DOCKERFILE}}'
+          IMAGE_NAME:
+            sh: grep -oP '(?<=/)[^:]+' <<< "{{.DOCKERFILE}}"
+    requires:
+      vars: [DOCKERFILE]
