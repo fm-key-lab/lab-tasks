@@ -24,6 +24,17 @@ tasks:
     status:
       - test -f ./{{.IMAGE_NAME}}.sif
 
+  run-inside:
+    vars:
+      EXTRA: '{{.EXTRA | default ""}}'
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: apptainer --quiet exec {{.EXTRA}} {{.IMAGE}} {{.CMDS}}
+          MODULE: '{{.APPTAINER_MODULE}}'
+    requires:
+      vars: [CMDS, IMAGE]
+
   create-apptainer-from-dockerhub:
     cmds:
       - task: create-apptainer
