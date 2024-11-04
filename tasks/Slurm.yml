@@ -69,4 +69,4 @@ tasks:
       PARTITION: '{{.PARTITION | default "small,general"}}'
       TIME: '{{.TIME | default "1:58:59"}}'
     cmds:
-      - srun --pty --partition={{.PARTITION}} --mem={{.MEM}} --time={{.TIME}} --cpus-per-task=8 {{.EXTRA}} bash
+      - srun --pty --partition={{.PARTITION}} --mem={{.MEM}} --time={{.TIME}} {{.EXTRA}} bash

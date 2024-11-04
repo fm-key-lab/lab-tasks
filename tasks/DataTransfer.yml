@@ -26,6 +26,13 @@ tasks:
 
   copy-*-*-nextcloud:
     desc: Local/Remote <-> Nextcloud
+    summary: |
+      Local/Remote <-> Nextcloud
+
+      Usage
+
+        copy-[file/contents/directory]-[to/from]-nextcloud
+
     vars:
       TYPE: '{{index .MATCH 0}}'
       DIRECTION: '{{index .MATCH 1}}'
