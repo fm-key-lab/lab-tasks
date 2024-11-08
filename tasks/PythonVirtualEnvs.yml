@@ -3,7 +3,7 @@ version: '3'
 vars:
   GROUP_VENVS: '{{.GROUP_HOME}}/envs/venv'
   PYTHON_MODULE: python-waterboa/2024.06
-  UV_MODULE: uv
+  DEFAULT_UV_MODULE: uv
 
 includes:
   envmodule: ./EnvironmentModules.yml
@@ -22,6 +22,7 @@ tasks:
       EXTRA_MODULES: '{{.EXTRA_MODULES | default ""}}'
       # TODO: More sensible default (maybe "" for system)
       PYTHON: '{{.PYTHON | default "$GROUP_HOME/opt/python/python/bin/python3.12"}}'
+      UV_MODULE: '{{.UV_MODULE | default .DEFAULT_UV_MODULE}}'
     prompt: Create environment {{.PREFIX}}?
     cmds:
       - mkdir -p {{.PREFIX}}
@@ -49,7 +50,7 @@ tasks:
       - task: envmodule:run-in-module
         vars:
           CMDS: 'cd {{.GROUP_VENVS}}/{{.NAME}} && uv venv --python={{.PYTHON}} && source .venv/bin/activate && uv pip install {{.PIP_INSTALL}} && deactivate'
-          MODULE: '{{.UV_MODULE}}'
+          MODULE: '{{.DEFAULT_UV_MODULE}}'
     vars:
       PYTHON: '{{.PYTHON | default "$GROUP_HOME/opt/python/python/bin/python3.12"}}'
     requires:
