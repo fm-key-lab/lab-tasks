@@ -1,10 +1,15 @@
 version: '3'
 
 vars:
+  DEFAULT_ARCHIVE_DEST:
+    sh: echo "/r/${USER:0:1}/$USER/lab_data"
+  MPIMG2MPIIB: '{{.GROUP_TOOLS}}/mpimg2mpiib'
+  RAW_SEQUENCING_DIR: '{{.GROUP_HOME}}/lab_data/raw_sequencing_data'
   RCLONE_MODULE: rclone/1.67.0
   RCLONE_CONFIG_NAME: nextcloud
 
 includes:
+  compress: ./Compression.yml
   envmodule: ./EnvironmentModules.yml
 
 tasks:
@@ -12,15 +17,103 @@ tasks:
 
   # Misc
 
+  mpiib-to-mpcdf:
+    vars:
+      DATA_DIR: '{{.DATA_DIR | default .RAW_SEQUENCING_DIR}}'
+    cmds:
+      - task: download-from-mpiib
+        vars:
+          RUN_ID: '{{.RUN_ID}}'
+          DATA: '{{.DATA}}'
+          REPORT: '{{.REPORT}}'
+          DATA_DIR: '{{.DATA_DIR}}'
+      - task: compress-mpiib-data
+        vars:
+          RUN_ID: '{{.RUN_ID}}'
+          DATA_DIR: '{{.DATA_DIR}}'
+      - task: copy-mpiib-archive-to-r
+        vars:
+          ARCHIVE: '{{.DATA_DIR}}/{{.RUN_ID}}.tar.lz4'
+      - task: link-mpiib-archive
+        vars:
+          RUN_ID: '{{.RUN_ID}}'
+    requires:
+      vars: [RUN_ID, DATA, REPORT]
+
+  download-from-mpiib:
+    dir: '{{.MPIMG2MPIIB}}'
+    prompt: Download data for {{.RUN_ID}} to {{.DATA_DIR}}?
+    cmds:
+      - make RUN_ID="{{.RUN_ID}}" DATA="{{.DATA}}" REPORT="{{.REPORT}}" DATA_DIR="{{.DATA_DIR}}"
+    requires:
+      vars: [RUN_ID, DATA, DATA_DIR, MPIMG2MPIIB, REPORT]
+    generates:
+      - '{{.DATA_DIR}}/{{.RUN_ID}}'
+      - '{{.DATA_DIR}}/{{.RUN_ID}}/data'
+      - '{{.DATA_DIR}}/{{.RUN_ID}}/{{.RUN_ID}}.log'
+      - '{{.DATA_DIR}}/{{.RUN_ID}}/$(basename {{.DATA}})'
+      - '{{.DATA_DIR}}/{{.RUN_ID}}/$(basename {{.REPORT}})'
+    status:
+      - test -f {{.DATA_DIR}}/{{.RUN_ID}}/{{.RUN_ID}}.log
+
+  compress-mpiib-data:
+    cmds:
+      - task: compress:compress-dir-lz4
+        vars:
+          DIRECTORY: '{{.RUN_ID}}'
+          PARENT: '{{.DATA_DIR}}'
+    requires:
+      vars: [RUN_ID, DATA_DIR]
+    generates:
+      - '{{.DATA_DIR}}/{{.RUN_ID}}.tar.lz4'
+    status:
+      - test -f {{.DATA_DIR}}/{{.RUN_ID}}.tar.lz4 || test -f {{.DEFAULT_ARCHIVE_DEST}}/{{.RUN_ID}}.tar.lz4
+
+  copy-mpiib-archive-to-r:
+    dir: '{{.DEFAULT_ARCHIVE_DEST}}'
+    cmds:
+      - mv {{.ARCHIVE}} .
+    requires:
+      vars: [ARCHIVE, DEFAULT_ARCHIVE_DEST]
+    generates:
+      - ./$(basename {{.ARCHIVE}})
+    status:
+      - test -f ./$(basename {{.ARCHIVE}})
+
+  link-mpiib-archive:
+    vars:
+      PTMP_ARCHIVE: '{{.RAW_SEQUENCING_DIR}}/archive'
+    dir: '{{.PTMP_ARCHIVE}}'
+    cmds:
+      - ln -s "{{.DEFAULT_ARCHIVE_DEST}}/{{.RUN_ID}}.tar.lz4" {{.RUN_ID}}
+    requires:
+      vars: [DEFAULT_ARCHIVE_DEST, RAW_SEQUENCING_DIR, RUN_ID]
+    generates:
+      - ./{{.RUN_ID}}
+    status:
+      - test -f ./{{.RUN_ID}}
+
+  ptmp-to-r:
+    vars:
+      DEST: '/r/${USER:0:1}/$USER/{{.DIR}}'
+      SRC: '/ptmp/$USER/{{.DIR}}'
+    cmds:
+      - task: rsync-dir
+    requires:
+      vars: [DIR]
+
   r-to-ptmp:
     vars:
       DEST: '/ptmp/$USER/{{.DIR}}'
       SRC: '/r/${USER:0:1}/$USER/{{.DIR}}'
     cmds:
-      - mkdir -p {{.DEST}}
-      - rsync --ignore-existing -av --progress {{.SRC}}/ {{.DEST}}/
+      - task: rsync-dir
     requires:
       vars: [DIR]
+
+  rsync-dir:
+    - mkdir -p {{.DEST}}
+    - rsync --ignore-existing -av --progress {{.SRC}}/ {{.DEST}}/
 
   # Nextcloud
 

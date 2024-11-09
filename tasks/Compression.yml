@@ -10,12 +10,12 @@ tasks:
   compress-dir-lz4:
     - task: lz4
       vars:
-        CMDS: 'tar cf - {{.DIR}} | lz4 > {{.DIR}}.tar.lz4'
+        CMDS: 'cd {{.PARENT}} && tar cf - {{.DIRECTORY}} | lz4 > {{.DIRECTORY}}.tar.lz4'
 
   decompress-dir-lz4:
     - task: lz4
       vars:
-        CMDS: 'lz4 -dc {{.DIR}} | tar xf -'
+        CMDS: 'cd {{.PARENT}} && lz4 -dc {{.DIRECTORY}} | tar xf -'
 
   lz4:
     - task: envmodule:run-inside

@@ -1,9 +1,12 @@
 version: '3'
 
 vars:
+  DEFAULT_GROUP_HOME: $GROUP_HOME
+  GROUP_HOME: '{{.GROUP_HOME | default .DEFAULT_GROUP_HOME}}'
   GROUP_BIN: '{{.GROUP_HOME}}/bin'
   GROUP_CONTAINERS: '{{.GROUP_HOME}}/containers'
   GROUP_MODULEFILES: '{{.GROUP_HOME}}/Modules/modulefiles'
+  GROUP_TOOLS: '{{.GROUP_HOME}}/tools'
   OPT_DIR: '{{.GROUP_HOME}}/opt'
 
 includes:
