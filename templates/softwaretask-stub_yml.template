@@ -1,0 +1,46 @@
+version: '3'
+
+includes:
+  group-installs: ../utils/GroupInstalls.yml
+
+tasks:
+  install:
+    desc: Install $APP
+    summary: |
+      Install $APP
+
+      URLs
+        - [GitHub]()
+        - [Docs]()
+    vars:
+      VERSION: '{{.VERSION | default "$VERSION"}}'
+    cmds:
+      - task: build
+        vars:
+          VERSION: '{{.VERSION}}'
+      - task: group-installs:complete
+        vars:
+          APP: $APP
+          EXE: $APP
+          RELPATH_EXE: /
+          VERSION: $VERSION
+
+  install-task:
+    platforms: [linux/amd64]
+    vars:
+      DIR: '{{.OPT_DIR}}/$APP/{{.VERSION}}'
+      URL: 
+    dir: '{{.DIR}}'
+    prompt: Install $APP in {{.DIR}}?
+    cmds:
+      - wget {{.URL}}
+      - defer: rm -f $$(basename {{.URL}})
+      - tar xf $$(basename {{.URL}})
+    requires:
+      vars: [OPT_DIR, VERSION]
+    generates:
+      - ./$APP
+    status:
+      - test -f ./$APP
+
+  test: 

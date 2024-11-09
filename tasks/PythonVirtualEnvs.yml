@@ -44,6 +44,8 @@ tasks:
   create-venv:
   # TODO: Graceful exits when errors
   # TODO: Use `uv init` instead with a config
+    vars:
+      PYTHON: '{{.PYTHON | default "$GROUP_HOME/opt/python/python/bin/python3.12"}}'
     dir: '{{.GROUP_VENVS}}/{{.NAME}}'
     prompt: Create environment {{.GROUP_VENVS}}/{{.NAME}}?
     cmds:
@@ -51,23 +53,21 @@ tasks:
         vars:
           CMDS: 'cd {{.GROUP_VENVS}}/{{.NAME}} && uv venv --python={{.PYTHON}} && source .venv/bin/activate && uv pip install {{.PIP_INSTALL}} && deactivate'
           MODULE: '{{.DEFAULT_UV_MODULE}}'
-    vars:
-      PYTHON: '{{.PYTHON | default "$GROUP_HOME/opt/python/python/bin/python3.12"}}'
     requires:
       vars: [NAME, PIP_INSTALL]
     status:
       - test -f {{.GROUP_VENVS}}/{{.NAME}}/.venv/bin/activate
 
   create-venv-modulefile:
+    vars:
+      DEFAULT_VERSION: 0.0.1-alpha
+      VERSION: '{{.DEFAULT_VERSION}}'
     dir: $GROUP_HOME/Modules/modulefiles/{{.NAME}}
     cmds:
       - task: envmodule:run-in-module
         vars:
           CMDS: 'python {{.ROOT_DIR}}/tasks/scripts/write_modulefile.py --NAME {{.NAME}} --VERSION {{.VERSION}} --template venv'
           MODULE: '{{.PYTHON_MODULE}}'
-    vars:
-      DEFAULT_VERSION: 0.0.1-alpha
-      VERSION: '{{.DEFAULT_VERSION}}'
     status:
       - test -f $GROUP_HOME/Modules/modulefiles/{{.NAME}}/{{.VERSION}}
     requires:

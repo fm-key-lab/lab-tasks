@@ -1,7 +1,11 @@
 version: '3'
 
 vars:
+  DEFAULT_PYTHON_MODULE: python-waterboa/2024.06
   RPM: /usr/bin/rpm
+
+includes:
+  envmodule: ./EnvironmentModules.yml
 
 tasks:
   vanilla-build:
@@ -37,3 +41,25 @@ tasks:
     grep -q avx2 /proc/cpuinfo && echo "AVX2: Yes" || echo "AVX2: No"
     grep -q sse4_1 /proc/cpuinfo && echo "SSE4.1: Yes" || echo "SSE4.1: No"
     grep -q sse2 /proc/cpuinfo && echo "SSE2: Yes" || echo "SSE2: No"
+
+  create-install-taskfile-stub:
+    desc: Create stub for a software install Taskfile.
+    vars:
+      PYTHON_MODULE: '{{.PYTHON_MODULE | default .DEFAULT_PYTHON_MODULE}}'
+      STUB_DIR: '{{.STUB_DIR | default ""}}'
+    dir: '{{.STUB_DIR}}'
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: |
+            python {{.ROOT_DIR}}/scripts/write_software_task_stub.py \
+              {{.STUB_DIR}} \
+              --APP {{.APP}} \
+              --VERSION {{.VERSION}}
+          MODULE: '{{.PYTHON_MODULE}}'
+    requires:
+      vars: [APP, VERSION]
+    generates:
+      - ./{{.APP}}.yml
+    status:
+      - test -f ./{{.APP}}.yml
