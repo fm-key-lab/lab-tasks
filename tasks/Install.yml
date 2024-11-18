@@ -5,7 +5,9 @@ vars:
   RPM: /usr/bin/rpm
 
 includes:
-  envmodule: ./EnvironmentModules.yml
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
+    internal: true
 
 tasks:
   vanilla-build:

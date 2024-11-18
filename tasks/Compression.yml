@@ -4,21 +4,33 @@ vars:
   LZ4: '{{.LZ4 | default "lz4/1.9"}}'
 
 includes:
-  envmodule: ./EnvironmentModules.yml
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
+    internal: true
 
 tasks:
   compress-dir-lz4:
-    - task: lz4
-      vars:
-        CMDS: 'cd {{.PARENT}} && tar cf - {{.DIRECTORY}} | lz4 > {{.DIRECTORY}}.tar.lz4'
+    desc: Tar and compress (LZ4) a directory.
+    cmds:
+      - task: lz4
+        vars:
+          CMDS: 'cd {{.PARENT}} && tar cf - {{.DIRECTORY}} | lz4 > {{.DIRECTORY}}.tar.lz4'
+    requires:
+      vars: [PARENT, DIRECTORY]
 
   decompress-dir-lz4:
-    - task: lz4
-      vars:
-        CMDS: 'cd {{.PARENT}} && lz4 -dc {{.DIRECTORY}} | tar xf -'
+    desc: De-compress (LZ4) and un-tar a directory.
+    cmds:
+      - task: lz4
+        vars:
+          CMDS: 'cd {{.PARENT}} && lz4 -dc {{.DIRECTORY}} | tar xf -'
+    requires:
+      vars: [PARENT, DIRECTORY]
 
   lz4:
-    - task: envmodule:run-inside
-      vars:
-        CMDS: '{{.CMDS}}'
-        MODULE: '{{.LZ4}}'
+    internal: true
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: '{{.CMDS}}'
+          MODULE: '{{.LZ4}}'

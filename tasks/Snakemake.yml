@@ -8,7 +8,9 @@ vars:
     sh: echo "/ptmp/$USER"
 
 includes:
-  env-modules: ./EnvironmentModules.yml
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
+    internal: true
 
 tasks:
   default:
@@ -51,7 +53,7 @@ tasks:
         vars:
           BRANCH: '{{.BRANCH}}'
           REPO: '{{.PROJ}}'
-      - task: env-modules:run-in-module
+      - task: envmodule:run-in-module
         vars:
           CMDS: 'export OMP_PLACES=$OMP_PLACES; cd "{{.PTMP}}/{{.PROJ}}"; snakemake --workflow-profile {{.PROFILE}} {{.EXTRA}}'
           MODULE: '{{.APPTAINER_MODULE}} {{.SNAKEMAKE_MODULE}}'

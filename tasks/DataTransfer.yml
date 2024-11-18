@@ -9,8 +9,12 @@ vars:
   RCLONE_CONFIG_NAME: nextcloud
 
 includes:
-  compress: ./Compression.yml
-  envmodule: ./EnvironmentModules.yml
+  compress:
+    taskfile: ./Compression.yml
+    internal: true
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
+    internal: true
 
 tasks:
   default:
@@ -41,6 +45,7 @@ tasks:
       vars: [RUN_ID, DATA, REPORT]
 
   download-from-mpiib:
+    internal: true
     dir: '{{.MPIMG2MPIIB}}'
     prompt: Download data for {{.RUN_ID}} to {{.DATA_DIR}}?
     cmds:
@@ -57,6 +62,7 @@ tasks:
       - test -f {{.DATA_DIR}}/{{.RUN_ID}}/{{.RUN_ID}}.log
 
   compress-mpiib-data:
+    internal: true
     cmds:
       - task: compress:compress-dir-lz4
         vars:
@@ -70,6 +76,7 @@ tasks:
       - test -f {{.DATA_DIR}}/{{.RUN_ID}}.tar.lz4 || test -f {{.DEFAULT_ARCHIVE_DEST}}/{{.RUN_ID}}.tar.lz4
 
   copy-mpiib-archive-to-r:
+    internal: true
     dir: '{{.DEFAULT_ARCHIVE_DEST}}'
     cmds:
       - mv {{.ARCHIVE}} .
@@ -81,6 +88,7 @@ tasks:
       - test -f ./$(basename {{.ARCHIVE}})
 
   link-mpiib-archive:
+    internal: true
     vars:
       PTMP_ARCHIVE: '{{.RAW_SEQUENCING_DIR}}/archive'
     dir: '{{.PTMP_ARCHIVE}}'
@@ -144,22 +152,31 @@ tasks:
       vars: [DESTPATH, SOURCEPATH]
 
   nextcloud-prepare-file-to:
-
+    internal: true
+  
   nextcloud-prepare-file-from:
+    internal: true
 
   nextcloud-prepare-contents-to:
+    internal: true
 
   nextcloud-prepare-contents-from:
+    internal: true
 
   nextcloud-prepare-directory-to:
+    internal: true
     cmds:
       - echo 'rclone mkdir "{{.RCLONE_CONFIG_NAME}}:{{.DESTPATH}}" {{.EXTRA}}'
     requires:
       vars: [DESTPATH]
 
-  nextcloud-prepare-directory-from: echo 'mkdir -p "{{.DESTPATH}}"'
+  nextcloud-prepare-directory-from:
+    internal: true
+    cmds:
+      - echo 'mkdir -p "{{.DESTPATH}}"'
 
   nextcloud-copy-file-to:
+    internal: true
     vars:
       # NOTE: Keep name the same. I don't think this is required for newer versions of rclone.
       FN:
@@ -172,6 +189,7 @@ tasks:
           EXTRA: '{{.EXTRA}}'
   
   nextcloud-copy-file-from:
+    internal: true
     vars:
       # NOTE: Keep name the same. I don't think this is required for newer versions of rclone.
       FN:
@@ -184,6 +202,7 @@ tasks:
           EXTRA: '{{.EXTRA}}'
 
   nextcloud-copy-contents-to:
+    internal: true
     cmds:
       - task: rclone-copy
         vars:
@@ -192,6 +211,7 @@ tasks:
           EXTRA: '{{.EXTRA}}'
 
   nextcloud-copy-contents-from:
+    internal: true
     cmds:
       - task: rclone-copy
         vars:
@@ -200,6 +220,7 @@ tasks:
           EXTRA: '{{.EXTRA}}'
 
   nextcloud-copy-directory-to:
+    internal: true
     cmds:
       - task: rclone-copy
         vars:
@@ -208,6 +229,7 @@ tasks:
           EXTRA: '{{.EXTRA}}'
 
   nextcloud-copy-directory-from:
+    internal: true
     cmds:
       - task: rclone-copy
         vars:

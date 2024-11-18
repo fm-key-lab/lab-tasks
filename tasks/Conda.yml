@@ -4,7 +4,9 @@ vars:
   CONDA_MODULE: anaconda/3/2023.03
 
 includes:
-  envmodule: ./EnvironmentModules.yml
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
+    internal: true
 
 tasks:
   create-env:
@@ -24,7 +26,10 @@ tasks:
     requires:
       vars: [NAME, INSTALL]
 
+  # TODO: Any benefit to activating vs. using conda run?
   run-in-conda-env:
+    desc: Run command in conda env.
+    internal: true
     silent: true
     cmds:
       - task: envmodule:run-inside

@@ -6,7 +6,9 @@ vars:
   DEFAULT_UV_MODULE: uv
 
 includes:
-  envmodule: ./EnvironmentModules.yml
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
+    internal: true
 
 tasks:
   # deprecate?

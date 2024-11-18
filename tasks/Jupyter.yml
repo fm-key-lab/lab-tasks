@@ -1,8 +1,12 @@
 version: '3'
 
 includes:
-  conda: ./Conda.yml
-  venv: ./PythonVirtualEnvs.yml
+  conda:
+    taskfile: ./Conda.yml
+    internal: true
+  venv:
+    taskfile: ./PythonVirtualEnvs.yml
+    internal: true
 
 tasks:
   add-kernel:
