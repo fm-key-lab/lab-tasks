@@ -166,14 +166,14 @@ tasks:
   nextcloud-prepare-directory-to:
     internal: true
     cmds:
-      - echo 'rclone mkdir "{{.RCLONE_CONFIG_NAME}}:{{.DESTPATH}}" {{.EXTRA}}'
+      - rclone mkdir "{{.RCLONE_CONFIG_NAME}}:{{.DESTPATH}}" {{.EXTRA}}
     requires:
       vars: [DESTPATH]
 
   nextcloud-prepare-directory-from:
     internal: true
     cmds:
-      - echo 'mkdir -p "{{.DESTPATH}}"'
+      - mkdir -p "{{.DESTPATH}}"
 
   nextcloud-copy-file-to:
     internal: true
