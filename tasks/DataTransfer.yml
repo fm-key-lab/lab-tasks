@@ -123,6 +123,35 @@ tasks:
     - mkdir -p {{.DEST}}
     - rsync --ignore-existing -av --progress {{.SRC}}/ {{.DEST}}/
 
+  # Syncing $HOME
+
+  sync-home:
+    desc: Synchronize $HOME <-> Nextcloud, Git.
+    summary: |
+      Synchronize $HOME <-> Nextcloud, Git.
+
+      Use Nextcloud and Git to synchronize $HOME across machines (e.g., local, 
+      Raven, Viper, Logan, ...). Sync untracked files using rclone + Nextcloud; 
+      sync tracked files using Git.
+
+    cmds:
+      - task: make-nextcloud-home-sync-directory
+      - task: sync-home-dev-nextcloud
+      - task: sync-home-dev-git
+      - task: sync-home-dotfiles
+
+  make-nextcloud-home-sync-directory:
+    internal: true
+
+  sync-home-dev-nextcloud:
+    internal: true
+
+  sync-home-dev-git:
+    internal: true
+
+  sync-home-dotfiles:
+    internal: true
+
   # Nextcloud
 
   copy-*-*-nextcloud:
