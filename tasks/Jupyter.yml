@@ -1,14 +1,28 @@
 version: '3'
 
+vars:
+  JUPYTER_CONF: $HOME/.jupyter/modules.conf
+  RVS_BIN: $RVS_HOME/bin
+  RVS_MODULE: rvs/1.0
+  RVS_SLURM_LOGS: $HOME/rvs
+
 includes:
   conda:
     taskfile: ./Conda.yml
+    internal: true
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
     internal: true
   venv:
     taskfile: ./PythonVirtualEnvs.yml
     internal: true
 
 tasks:
+
+  # 
+  # Adding kernels to Python environments
+  # 
+
   add-kernel:
     cmds:
       - bash -c 'python -m ipykernel install --user --name {{.NAME}} --display-name "Python ({{.NAME}})"'
@@ -16,13 +30,6 @@ tasks:
       - test -d ~/.local/share/jupyter/kernels/{{.NAME}}
     requires:
       vars: [NAME]
-
-  run-inside:
-    dir: '{{.PREFIX}}'
-    cmds:
-      - bash -c 'source .venv/bin/activate; {{.CMDS}}; deactivate'
-    required:
-      vars: [CMDS, PREFIX]
 
   add-kernel-to-venv:
     vars:
@@ -38,6 +45,34 @@ tasks:
     status:
       - test -d ~/.local/share/jupyter/kernels/{{.NAME}}
 
-  add-kernel-to-conda-env:
+  # TODO: 
+  # add-kernel-to-conda-env:
+  #   cmds:
+  #     - task: add-kernel
+
+  # TODO: 
+  # add-irkernel-to-:
+
+  # 
+  # Using MPCDF JNaaS
+  # 
+
+  # NOTE: Custom batch scripts are not authorized on the RVS partition
+
+  launch-jnaas:
+    desc: Wrapper for using MPCDF's JNaaS
+    vars:
+      EXTRA_MODULES: '{{.EXTRA_MODULES | default "rvs"}}' # TODO: Better defaults/handling when none passed
+      JUPYTER_CONF_BACKUP:
+        sh: echo "{{.JUPYTER_CONF}}-$(date +'%m%d%Y%H%M%S')"
+      SERVICE: '{{.SERVICE | default "jlabr_cpu"}}'
+      TIME: '{{.TIME | default "2:00:00"}}'
     cmds:
-      - task: add-kernel
+      - mv {{.JUPYTER_CONF}} {{.JUPYTER_CONF_BACKUP}}
+      - echo -e '#!/bin/bash\nmodule load {{.EXTRA_MODULES}}' > {{.JUPYTER_CONF}}
+      - bash {{.ROOT_DIR}}/scripts/jnaas_watch_submit.sh {{.RVS_MODULE}} {{.TIME}} {{.SERVICE}}
+      - |
+        rm -f {{.JUPYTER_CONF}}
+        mv {{.JUPYTER_CONF_BACKUP}} {{.JUPYTER_CONF}}
+    requires:
+      vars: [RVS_BIN, RVS_MODULE, RVS_SLURM_LOGS]
