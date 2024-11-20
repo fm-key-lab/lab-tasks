@@ -133,18 +133,48 @@ tasks:
       Use Nextcloud and Git to synchronize $HOME across machines (e.g., local, 
       Raven, Viper, Logan, ...). Sync untracked files using rclone + Nextcloud; 
       sync tracked files using Git.
-
+    vars:
+      EXTRA: '{{.EXTRA | default "--dry-run"}}'
+      NEXTCLOUD_SYNC: '{{.RCLONE_CONFIG_NAME}}:dev_sync'
+      DEV_PREFIX: '~/dev'
+      DEV_SUBDIRS: [
+        'config',
+        'notes',
+        'scripts',
+        'snippets',
+        'workspaces'
+      ]
     cmds:
       - task: make-nextcloud-home-sync-directory
-      - task: sync-home-dev-nextcloud
+        vars:
+          EXTRA: '{{.EXTRA}}'
+          NEXTCLOUD_SYNC: '{{.NEXTCLOUD_SYNC}}'
+      - for: { var: DEV_SUBDIRS }
+        task: sync-home-dev-nextcloud
+        vars:
+          EXTRA: '{{.EXTRA}}'
+          NEXTCLOUD_SYNC: '{{.NEXTCLOUD_SYNC}}/{{.ITEM}}'
+          SOURCEPATH:
+            sh: echo "{{.DEV_PREFIX}}/{{.ITEM}}"
       - task: sync-home-dev-git
       - task: sync-home-dotfiles
 
+  # NOTE: If dest:path doesn't exist, it is created and the source:path contents go there.
   make-nextcloud-home-sync-directory:
     internal: true
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: rclone mkdir "{{.NEXTCLOUD_SYNC}}" {{.EXTRA}}
+          MODULE: '{{.RCLONE_MODULE}}'
 
   sync-home-dev-nextcloud:
     internal: true
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: rclone sync "{{.SOURCEPATH}}" "{{.NEXTCLOUD_SYNC}}" {{.EXTRA}}
+          MODULE: '{{.RCLONE_MODULE}}'
 
   sync-home-dev-git:
     internal: true
@@ -195,14 +225,17 @@ tasks:
   nextcloud-prepare-directory-to:
     internal: true
     cmds:
-      - echo 'rclone mkdir "{{.RCLONE_CONFIG_NAME}}:{{.DESTPATH}}" {{.EXTRA}}'
+      - task: envmodule:run-inside
+        vars:
+          CMDS: rclone mkdir "{{.RCLONE_CONFIG_NAME}}:{{.DESTPATH}}" {{.EXTRA}}
+          MODULE: '{{.RCLONE_MODULE}}'
     requires:
-      vars: [DESTPATH]
+      vars: [DESTPATH, EXTRA, RCLONE_CONFIG_NAME, RCLONE_MODULE]
 
   nextcloud-prepare-directory-from:
     internal: true
     cmds:
-      - echo 'mkdir -p "{{.DESTPATH}}"'
+      - mkdir -p "{{.DESTPATH}}"
 
   nextcloud-copy-file-to:
     internal: true
