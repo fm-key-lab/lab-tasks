@@ -3,22 +3,25 @@ version: '3'
 silent: true
 
 includes:
-  compress: ./tasks/Compression.yml
-  conda: ./tasks/Conda.yml
-  transfer: ./tasks/DataTransfer.yml
-  envmodule: ./tasks/EnvironmentModules.yml
-  install: ./tasks/Install.yml
-  jupyter: ./tasks/Jupyter.yml
-  latex: ./tasks/LaTeX.yml
-  smk: ./tasks/Snakemake.yml
-  venv: ./tasks/PythonVirtualEnvs.yml
+  lab-tasks:
+    taskfile: ./
+    internal: true
+    flatten: true
 
 tasks:
   default:
     - task: lz4-dir
 
+  #
+  # Utils
+  #
+
   rand-file: 
     - openssl rand -out {{.OUT}} $(({{.SIZE}} * 1024))
+
+  #
+  # Compress
+  #
 
   lz4-dir:
     - mkdir -p tests/lz4 tests/lz4_d
