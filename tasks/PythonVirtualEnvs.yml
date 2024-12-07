@@ -63,7 +63,7 @@ tasks:
   create-venv-modulefile:
     vars:
       DEFAULT_VERSION: 0.0.1-alpha
-      VERSION: '{{.DEFAULT_VERSION}}'
+      VERSION: '{{.VERSION | default .DEFAULT_VERSION}}'
     dir: $GROUP_HOME/Modules/modulefiles/{{.NAME}}
     cmds:
       - task: envmodule:run-in-module
@@ -75,7 +75,7 @@ tasks:
     requires:
       vars: [NAME]
 
-  add_jupyter_kernel:
+  add-jupyter-kernel:
     dir: '{{.GROUP_VENVS}}/{{.NAME}}'
     cmds:
       - task: run-inside
@@ -94,20 +94,34 @@ tasks:
     required:
       vars: [CMDS, PREFIX]
 
-  sandbox_venv:
+  clear-uv-cache:
+    desc: Clear UV cache
+    summary: |
+      Clear UV cache
+
+      URLs
+        - https://docs.astral.sh/uv/concepts/cache/#clearing-the-cache
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: uv cache prune
+          MODULE: uv
+
+  sandbox-venv:
     vars:
       NAME: sandbox
-      PYTHON_VERSION: 3.12
+      PYTHON: /mpcdf/soft/RHEL_9/packages/x86_64/python-waterboa/2024.06/bin/python
     cmds:
       - task: create-venv
         vars:
           NAME: '{{.NAME}}'
-          PYTHON: $GROUP_HOME/opt/python/python/bin/python{{.PYTHON_VERSION}}
+          PYTHON: '{{.PYTHON}}'
+          # PIP_INSTALL: -r $GROUP_HOME/tools/hpc-setup/setup-tasks/envs/sandbox-requirements.txt
           PIP_INSTALL: -r '{{.ROOT_DIR}}/tasks/envs/sandbox-requirements.txt'
       - task: create-venv-modulefile
         vars:
           NAME: '{{.NAME}}'
-      - task: add_jupyter_kernel
+      - task: add-jupyter-kernel
         vars:
           NAME: '{{.NAME}}'
 

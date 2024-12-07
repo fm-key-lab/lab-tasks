@@ -45,7 +45,7 @@ tasks:
     vars:
       BRANCH: '{{.BRANCH | default "main"}}'
       EXTRA: '{{.EXTRA | default ""}}'
-      PROFILE: '{{.PROFILE | default "profiles"}}'
+      PROFILE: '{{.PROFILE | default "$SNAKEMAKE_PROFILE"}}'
     dir: '{{.PTMP}}'
     silent: true
     cmds:
@@ -55,7 +55,8 @@ tasks:
           REPO: '{{.PROJ}}'
       - task: envmodule:run-in-module
         vars:
-          CMDS: 'export OMP_PLACES=$OMP_PLACES; cd "{{.PTMP}}/{{.PROJ}}"; snakemake --workflow-profile {{.PROFILE}} {{.EXTRA}}'
+          # CMDS: 'export OMP_PLACES=$OMP_PLACES; cd "{{.PTMP}}/{{.PROJ}}"; snakemake --workflow-profile {{.PROFILE}} {{.EXTRA}}'
+          CMDS: 'export OMP_PLACES=$OMP_PLACES; cd "{{.PTMP}}/{{.PROJ}}"; snakemake {{.EXTRA}}'
           MODULE: '{{.APPTAINER_MODULE}} {{.SNAKEMAKE_MODULE}}'
     env:
       OMP_PLACES: threads # Assumes CPUs placed on threads
