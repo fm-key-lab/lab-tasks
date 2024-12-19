@@ -261,7 +261,7 @@ tasks:
     cmds:
       - task: rclone
         vars:
-          RCLONE_CMD: copyto
+          RCLONE_CMD: copy
           SRC: '{{.SRC}}'
           DST: '{{.DST}}'
           EXTRA: '{{.EXTRA}}'

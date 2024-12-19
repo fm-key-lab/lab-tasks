@@ -1,0 +1,23 @@
+version: '3'
+
+vars:
+  RVS_MODULE: 'rvs/1.0'
+
+includes:
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
+    internal: true
+
+tasks:
+  launch-figtree:
+    vars:
+      TIME: '{{.TIME | default "1:00:00"}}'
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: |
+            cd $HOME/rvs
+            sbatch --time={{.TIME}} $RVS_HOME/bin/rvs_cpu.cmd
+          MODULE: '{{.RVS_MODULE}}'
+      - |
+        echo "1. Open URL, 2. Authenticate, 3. Open terminal, 4. Run `ml figtree; figtree_gui`"

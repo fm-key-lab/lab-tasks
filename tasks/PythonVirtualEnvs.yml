@@ -11,7 +11,6 @@ includes:
     internal: true
 
 tasks:
-  # deprecate?
   create:
     desc: Create virtual environment with uv
     summary: |
@@ -63,7 +62,7 @@ tasks:
   create-venv-modulefile:
     vars:
       DEFAULT_VERSION: 0.0.1-alpha
-      VERSION: '{{.VERSION | default .DEFAULT_VERSION}}'
+      VERSION: '{{.DEFAULT_VERSION}}'
     dir: $GROUP_HOME/Modules/modulefiles/{{.NAME}}
     cmds:
       - task: envmodule:run-in-module
@@ -74,18 +73,6 @@ tasks:
       - test -f $GROUP_HOME/Modules/modulefiles/{{.NAME}}/{{.VERSION}}
     requires:
       vars: [NAME]
-
-  add-jupyter-kernel:
-    dir: '{{.GROUP_VENVS}}/{{.NAME}}'
-    cmds:
-      - task: run-inside
-        vars:
-          CMDS: 'python -m ipykernel install --user --name group-venv-{{.NAME}} --display-name "Python ({{.NAME}}), group venvs"'
-          PREFIX: '{{.GROUP_VENVS}}/{{.NAME}}'
-    status:
-      - test -d $HOME/.local/share/jupyter/kernels/group-venv-{{.NAME}}
-    requires:
-      vars: [NAME]
   
   run-inside:
     dir: '{{.PREFIX}}'
@@ -93,58 +80,3 @@ tasks:
       - bash -c 'source .venv/bin/activate; {{.CMDS}}; deactivate'
     required:
       vars: [CMDS, PREFIX]
-
-  clear-uv-cache:
-    desc: Clear UV cache
-    summary: |
-      Clear UV cache
-
-      URLs
-        - https://docs.astral.sh/uv/concepts/cache/#clearing-the-cache
-    cmds:
-      - task: envmodule:run-inside
-        vars:
-          CMDS: uv cache prune
-          MODULE: uv
-
-  sandbox-venv:
-    vars:
-      NAME: sandbox
-      PYTHON: /mpcdf/soft/RHEL_9/packages/x86_64/python-waterboa/2024.06/bin/python
-    cmds:
-      - task: create-venv
-        vars:
-          NAME: '{{.NAME}}'
-          PYTHON: '{{.PYTHON}}'
-          # PIP_INSTALL: -r $GROUP_HOME/tools/hpc-setup/setup-tasks/envs/sandbox-requirements.txt
-          PIP_INSTALL: -r '{{.ROOT_DIR}}/tasks/envs/sandbox-requirements.txt'
-      - task: create-venv-modulefile
-        vars:
-          NAME: '{{.NAME}}'
-      - task: add-jupyter-kernel
-        vars:
-          NAME: '{{.NAME}}'
-
-  python_packaging_venv:
-    vars:
-      NAME: python_packaging
-      PYTHON_VERSION: 3.12
-    cmds:
-      - task: create-venv
-        vars:
-          NAME: '{{.NAME}}'
-          PYTHON: $GROUP_HOME/opt/python/python/bin/python{{.PYTHON_VERSION}}
-          PIP_INSTALL: -r '{{.ROOT_DIR}}/tasks/envs/{{.NAME}}-requirements.txt'
-      - task: create-venv-modulefile
-        vars:
-          NAME: '{{.NAME}}'
-
-  # uv pip install numpy scipy pandas loguru requests ghostscript matplotlib ipykernel ipython ipywidgets jupyter jupyter_server==2.12.5 jupyterlab seaborn
-  toytree-env:
-    dir: $HOME/dev/envs
-    cmds:
-      # - git clone https://github.com/eaton-lab/toytree.git
-      - task: env-modules:run-in-module
-        vars:
-          CMDS: 'cd $HOME/dev/envs/toytree && conda install toytree -c conda-forge --only-deps && pip install -e . --no-deps'
-          MODULE: 'anaconda/3/2023.03'

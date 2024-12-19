@@ -10,6 +10,7 @@ vars:
   OPT_DIR: '{{.GROUP_HOME}}/opt'
 
 includes:
+  apps: ./tasks/Applications.yml
   compress: ./tasks/Compression.yml
   conda: ./tasks/Conda.yml
   containers: ./tasks/Containers.yml
@@ -18,6 +19,7 @@ includes:
   install: ./tasks/Install.yml
   jupyter: ./tasks/Jupyter.yml
   latex: ./tasks/LaTeX.yml
+  renv: ./tasks/REnvs.yml
   slurm: ./tasks/Slurm.yml
   smk: ./tasks/Snakemake.yml
   venv: ./tasks/PythonVirtualEnvs.yml

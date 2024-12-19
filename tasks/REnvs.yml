@@ -1,0 +1,53 @@
+version: '3'
+
+vars:
+  GROUP_RENVS: '{{.GROUP_HOME}}/envs/renv'
+  R_MODULE: R/4.4.2
+
+includes:
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
+    internal: true
+
+tasks:
+  create:
+    desc: Create an R environment using `renv`
+    dir: '{{.GROUP_RENVS}}/{{.NAME}}'
+    prompt: Create environment {{.GROUP_RENVS}}/{{.NAME}}?
+    summary: |
+      Create an R environment using `renv`
+
+      Usage
+      -----
+      $ task renv:create NAME=ggtree RENV_INSTALL='"bioc::ggtree@3.14.0", "bioc::ggtreeExtra@1.16.0", "cowplot", "ggpubr", "IRkernel", "tidyverse", "viridis"'
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: |
+            cd {{.GROUP_RENVS}}/{{.NAME}}
+
+            export RENV_PATHS_CACHE="$GROUP_HOME/.cache/R/renv/cache"
+            mkdir -p $RENV_PATHS_CACHE
+
+            Rscript - <<EOF
+            library(renv)
+            renv::init()
+            q("no")
+            EOF
+
+            Rscript - <<EOF
+            library(flexiblas, lib.loc = "/nexus/posix0/MPIIB-keylab/opt/R/4.4.2/R-4.4.2/library")
+            library(renv)
+            
+            renv::install("flexiblas", prompt = FALSE)
+            library(flexiblas)
+
+            renv::install(c({{.RENV_INSTALL}}), prompt = FALSE)
+            renv::snapshot(prompt = FALSE)
+            
+            q("no")
+            EOF
+
+          MODULE: '{{.R_MODULE}}'
+    requires:
+      vars: [NAME, R_MODULE, RENV_INSTALL]
