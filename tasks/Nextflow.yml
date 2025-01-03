@@ -1,0 +1,24 @@
+version: '3'
+
+vars:
+  APPTAINER_MODULE: apptainer/1.3.2
+  NXF_MODULE: nextflow/24.10
+  JDK_MODULE: jdk/17.0.10
+  
+  PTMP:
+    sh: echo "/ptmp/$USER"
+
+includes:
+  envmodule:
+    taskfile: ./EnvironmentModules.yml
+    internal: true
+
+tasks:
+  download-nf-core-pipeline:
+    # Run in nf-core virtual env, via nf-core envmodule
+    # --parallel-downloads ?
+    # Use compute node
+    - nf-core pipelines download sarek -r 3.5.0 --outdir $GROUP_HOME/tools/nf-core/sarek --container-system singularity --container-cache-utilisation amend --compress none
+    - nf-core pipelines download bactmap -r 1.0.0 --outdir $GROUP_HOME/tools/nf-core/bactmap --container-system singularity --container-cache-utilisation amend --compress none
+    - nf-core pipelines download taxprofiler -r 1.2.1 --outdir $GROUP_HOME/tools/nf-core/taxprofiler --container-system singularity --container-cache-utilisation amend --compress none
+    - nf-core pipelines download eager -r dev --outdir $GROUP_HOME/tools/nf-core/eager --container-system none --compress none
