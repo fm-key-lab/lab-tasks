@@ -22,14 +22,18 @@ tasks:
       URLs
         - [Docs](https://nf-co.re/docs/nf-core-tools/pipelines/download)
     vars:
-      COMPRESS: '{{.COMPRESS | default "none"}}'
-      CONTAINER_CACHE_UTILISATION: '{{.CONTAINER_CACHE_UTILISATION | default "amend"}}'
-      CONTAINER_SYSTEM: '{{.CONTAINER_SYSTEM | default "singularity"}}'
+      # Task options
       NFCORE_MODULE: '{{.NFCORE_MODULE | default .DEFAULT_NFCORE_MODULE}}'
-      OUTDIR: '{{.OUTDIR}}'
       PATH_VERSION:
         sh: echo "{{.VERSION}}" | tr '.' '_'
       PATH: '{{.OUTDIR}}/{{.PATH_VERSION}}'
+
+      # Options for `nf-core pipelines download ...`
+      COMPRESS: '{{.COMPRESS | default "none"}}'
+      CONTAINER_CACHE_UTILISATION: '{{.CONTAINER_CACHE_UTILISATION | default "amend"}}'
+      CONTAINER_SYSTEM: '{{.CONTAINER_SYSTEM | default "singularity"}}'
+      EXTRA: '{{.EXTRA | default ""}}'
+      OUTDIR: '{{.OUTDIR}}'
     prompt: Download {{.PIPELINE}} to {{.PATH}}?
     cmds:
       - task: envmodule:run-inside
@@ -40,7 +44,8 @@ tasks:
               --outdir {{.OUTDIR}} \
               --container-system {{.CONTAINER_SYSTEM}} \
               --container-cache-utilisation {{.CONTAINER_CACHE_UTILISATION}} \
-              --compress {{.COMPRESS}}
+              --compress {{.COMPRESS}} \
+              {{.EXTRA}}
           MODULE: '{{.NFCORE_MODULE}}'
     requires:
       vars: [OUTDIR, PIPELINE, VERSION]
