@@ -1,12 +1,7 @@
 version: '3'
 
 vars:
-  APPTAINER_MODULE: apptainer/1.3.2
-  NXF_MODULE: nextflow/24.10
-  JDK_MODULE: jdk/17.0.10
-  
-  PTMP:
-    sh: echo "/ptmp/$USER"
+  DEFAULT_NFCORE_MODULE: nf-core/3.1.1
 
 includes:
   envmodule:
@@ -15,10 +10,60 @@ includes:
 
 tasks:
   download-nf-core-pipeline:
-    # Run in nf-core virtual env, via nf-core envmodule
-    # --parallel-downloads ?
-    # Use compute node
-    - nf-core pipelines download sarek -r 3.5.0 --outdir $GROUP_HOME/tools/nf-core/sarek --container-system singularity --container-cache-utilisation amend --compress none
-    - nf-core pipelines download bactmap -r 1.0.0 --outdir $GROUP_HOME/tools/nf-core/bactmap --container-system singularity --container-cache-utilisation amend --compress none
-    - nf-core pipelines download taxprofiler -r 1.2.1 --outdir $GROUP_HOME/tools/nf-core/taxprofiler --container-system singularity --container-cache-utilisation amend --compress none
-    - nf-core pipelines download eager -r dev --outdir $GROUP_HOME/tools/nf-core/eager --container-system none --compress none
+    desc: Downloading pipelines for offline use
+    summary: |
+      Downloading pipelines for offline use
+
+      Notes
+        - `--container-system` must be either "singularity" or "none"
+        - containers are downloaded to $NXF_SINGULARITY_CACHEDIR by default
+        - OUTDIR should not already exist
+
+      URLs
+        - [Docs](https://nf-co.re/docs/nf-core-tools/pipelines/download)
+    vars:
+      COMPRESS: '{{.COMPRESS | default "none"}}'
+      CONTAINER_CACHE_UTILISATION: '{{.CONTAINER_CACHE_UTILISATION | default "amend"}}'
+      CONTAINER_SYSTEM: '{{.CONTAINER_SYSTEM | default "singularity"}}'
+      NFCORE_MODULE: '{{.NFCORE_MODULE | default .DEFAULT_NFCORE_MODULE}}'
+      OUTDIR: '{{.OUTDIR}}'
+      PATH_VERSION:
+        sh: echo "{{.VERSION}}" | tr '.' '_'
+      PATH: '{{.OUTDIR}}/{{.PATH_VERSION}}'
+    prompt: Download {{.PIPELINE}} to {{.PATH}}?
+    cmds:
+      - task: envmodule:run-inside
+        vars:
+          CMDS: |
+            nf-core pipelines download {{.PIPELINE}} \
+              -r {{.VERSION}} \
+              --outdir {{.OUTDIR}} \
+              --container-system {{.CONTAINER_SYSTEM}} \
+              --container-cache-utilisation {{.CONTAINER_CACHE_UTILISATION}} \
+              --compress {{.COMPRESS}}
+          MODULE: '{{.NFCORE_MODULE}}'
+    requires:
+      vars: [OUTDIR, PIPELINE, VERSION]
+    generates:
+      - '{{.PATH}}'
+      - '{{.PATH}}/assets'
+      - '{{.PATH}}/bin'
+      - '{{.PATH}}/CHANGELOG.md'
+      - '{{.PATH}}/CITATIONS.md'
+      - '{{.PATH}}/CODE_OF_CONDUCT.md'
+      - '{{.PATH}}/conf'
+      - '{{.PATH}}/docs'
+      - '{{.PATH}}/LICENSE'
+      - '{{.PATH}}/main.nf'
+      - '{{.PATH}}/modules'
+      - '{{.PATH}}/modules.json'
+      - '{{.PATH}}/nextflow.config'
+      - '{{.PATH}}/nextflow_schema.json'
+      - '{{.PATH}}/nf-test.config'
+      - '{{.PATH}}/README.md'
+      - '{{.PATH}}/subworkflows'
+      - '{{.PATH}}/tests'
+      - '{{.PATH}}/tower.yml'
+      - '{{.PATH}}/workflows'
+    status:
+      - test -f '{{.PATH}}/main.nf'
