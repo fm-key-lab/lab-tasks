@@ -12,7 +12,6 @@ tasks:
   create-apptainer:
     desc: Create
     vars:
-      DIR: '{{.DIR | default .GROUP_CONTAINERS}}'
       EXTRA: '{{.EXTRA | default "--notest"}}'
     dir: '{{.DIR}}'
     cmds:
@@ -21,7 +20,7 @@ tasks:
           CMDS: apptainer build {{.EXTRA}} {{.DIR}}/{{.IMAGE_NAME}}.sif {{.DEFINITION_FILE}}
           MODULE: '{{.APPTAINER_MODULE}}'
     requires:
-      vars: [APPTAINER_MODULE, DEFINITION_FILE, GROUP_CONTAINERS, IMAGE_NAME]
+      vars: [APPTAINER_MODULE, DEFINITION_FILE, DIR, GROUP_CONTAINERS, IMAGE_NAME]
     generates:
       - ./{{.IMAGE_NAME}}.sif
     status:
@@ -40,11 +39,18 @@ tasks:
       vars: [CMDS, IMAGE]
 
   create-apptainer-from-dockerhub:
+    vars:
+      IMAGE_NAME:
+        sh: grep -oP '(?<=/)[^:]+' <<< "{{.DOCKERFILE}}"
     cmds:
       - task: create-apptainer
         vars:
           DEFINITION_FILE: 'docker://{{.DOCKERFILE}}'
-          IMAGE_NAME:
-            sh: grep -oP '(?<=/)[^:]+' <<< "{{.DOCKERFILE}}"
+          DIR: '{{.DIR}}'
+          IMAGE_NAME: '{{.IMAGE_NAME}}'
     requires:
-      vars: [DOCKERFILE]
+      vars: [DIR, DOCKERFILE]
+    generates:
+      - '{{.DIR}}/{{.IMAGE_NAME}}.sif'
+    status:
+      - test -f '{{.DIR}}/{{.IMAGE_NAME}}.sif'
