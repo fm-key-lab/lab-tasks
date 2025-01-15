@@ -21,6 +21,7 @@ includes:
   latex: ./tasks/LaTeX.yml
   nxf: ./tasks/Nextflow.yml
   renv: ./tasks/REnvs.yml
+  script: ./tasks/Scripting.yml
   slurm: ./tasks/Slurm.yml
   smk: ./tasks/Snakemake.yml
   venv: ./tasks/PythonVirtualEnvs.yml

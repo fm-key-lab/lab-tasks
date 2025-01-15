@@ -1,4 +1,5 @@
-*_tex.template linguist-language=TeX
 *_bib.template linguist-language=BibTeX
+*_sh.template linguist-language=Bash
+*_tex.template linguist-language=TeX
 modulefile.template linguist-language=Tcl
 *.yml linguist-detectable=true

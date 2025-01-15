@@ -1,0 +1,17 @@
+version: '3'
+
+tasks:
+  create-from-bash-template:
+    desc: Create Bash script stub
+    summary: |
+      Create Bash script stub
+
+      Provides a Bash shell script template from the template 
+      provided in Chapter 11: Developing Your Style Guide from 
+      Bash Idioms by C Albing and JP Vossen (2022).
+    cmds:
+      - cp '{{.ROOT_DIR}}/templates/bashscript-stub_sh.template' {{.DEST}}
+    status:
+      - test -f {{.DEST}}
+    requires:
+      vars: [DEST]
